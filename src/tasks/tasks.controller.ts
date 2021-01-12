@@ -38,11 +38,11 @@ export class TasksController {
   //   this.tasksService.deleteTask(id);
   // }
   //
-  // @Post()
-  // @UsePipes(ValidationPipe)
-  // createTask(@Body() createTaskDto: CreateTaskDto): Task {
-  //   return this.tasksService.createTask(createTaskDto);
-  // }
+  @Post()
+  @UsePipes(ValidationPipe)
+  createTask(@Body() createTaskDto: CreateTaskDto): Promise<Task> {
+    return this.tasksService.createTask(createTaskDto);
+  }
   //
   // @Patch('/:id/status')
   // updateTaskStatus(
