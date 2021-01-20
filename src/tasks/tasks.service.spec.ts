@@ -3,11 +3,13 @@ import { Test } from '@nestjs/testing';
 import { TaskRepository } from './task.repository';
 import { GetTasksFilterDto } from './dto/get-tasks-filter-dto';
 import { TaskStatus } from './task-status.enum';
+import { NotFoundException } from '@nestjs/common';
 
-const mockUser = { username: 'Test user' };
+const mockUser = { id: 12, username: 'Test user' };
 
 const mockTaskRepository = () => ({
   getTasks: jest.fn(),
+  findOne: jest.fn(),
 });
 
 describe('TasksService', () => {
@@ -38,6 +40,31 @@ describe('TasksService', () => {
       const result = await tasksService.getTasks(filters, mockUser);
       expect(taskRepository.getTasks).toHaveBeenCalled();
       expect(result).toEqual(resolvedValue);
+    });
+  });
+
+  describe('getTaskById', () => {
+    it('calls findOne and retrieve the task', async () => {
+      const id = 1;
+      const mockTask = {
+        title: 'test task',
+        description: 'test desc',
+      };
+      taskRepository.findOne.mockResolvedValue(mockTask);
+      const result = await tasksService.getTaskById(id, mockUser);
+      expect(result).toEqual(mockTask);
+      expect(taskRepository.findOne).toHaveBeenCalledWith({
+        where: {
+          id,
+          userId: mockUser.id,
+        },
+      });
+    });
+    it('throws an error, when task not found', async () => {
+      taskRepository.findOne.mockResolvedValue(null);
+      await expect(tasksService.getTaskById(1, mockUser)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });
