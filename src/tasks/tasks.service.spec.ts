@@ -6,10 +6,15 @@ import { TaskStatus } from './task-status.enum';
 import { NotFoundException } from '@nestjs/common';
 
 const mockUser = { id: 12, username: 'Test user' };
+const mockTask = {
+  title: 'test task',
+  description: 'test desc',
+};
 
 const mockTaskRepository = () => ({
   getTasks: jest.fn(),
   findOne: jest.fn(),
+  createTask: jest.fn(),
 });
 
 describe('TasksService', () => {
@@ -46,10 +51,7 @@ describe('TasksService', () => {
   describe('getTaskById', () => {
     it('calls findOne and retrieve the task', async () => {
       const id = 1;
-      const mockTask = {
-        title: 'test task',
-        description: 'test desc',
-      };
+
       taskRepository.findOne.mockResolvedValue(mockTask);
       const result = await tasksService.getTaskById(id, mockUser);
       expect(result).toEqual(mockTask);
@@ -65,6 +67,20 @@ describe('TasksService', () => {
       await expect(tasksService.getTaskById(1, mockUser)).rejects.toThrow(
         NotFoundException,
       );
+    });
+  });
+
+  describe('createTask', () => {
+    it('calls create and returns the result', async () => {
+      taskRepository.createTask.mockResolvedValue('task');
+      expect(taskRepository.createTask).not.toHaveBeenCalled();
+      const result = await tasksService.createTask(mockTask, mockUser);
+      expect(taskRepository.createTask).toHaveBeenCalled();
+      expect(taskRepository.createTask).toHaveBeenCalledWith(
+        mockTask,
+        mockUser,
+      );
+      expect(result).toEqual('task');
     });
   });
 });
